@@ -11,7 +11,7 @@ resource "aws_vpc" "one" {
 resource "aws_subnet" "sub1" {
   vpc_id                  = aws_vpc.one.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "ap-south-1a"
+  availability_zone       = "us-east-1a"
 
   tags = {
     Name = "pub-sub-one"
@@ -21,7 +21,7 @@ resource "aws_subnet" "sub1" {
 resource "aws_subnet" "sub2" {
   vpc_id                  = aws_vpc.one.id
   cidr_block              = "10.0.2.0/24"
-  availability_zone       = "ap-south-1b"
+  availability_zone       = "us-east-1b"
 
   tags = {
     Name = "pub-sub-two"
@@ -96,7 +96,7 @@ resource "aws_nat_gateway" "nat" {
 resource "aws_subnet" "sub3" {
   vpc_id                  = aws_vpc.one.id
   cidr_block              = "10.0.3.0/24"
-  availability_zone       = "ap-south-1c"
+  availability_zone       = "us-east-1a"
 
   tags = {
     Name = "pri-sub-one"
@@ -107,7 +107,7 @@ resource "aws_subnet" "sub3" {
 resource "aws_subnet" "sub4" {
   vpc_id                  = aws_vpc.one.id
   cidr_block              = "10.0.4.0/24"
-  availability_zone       = "ap-south-1d"
+  availability_zone       = "us-east-1b"
 
   tags = {
     Name = "pri-sub-two"
@@ -193,34 +193,9 @@ resource "aws_security_group" "security" {
 }
 
 
-# IAM role for instance profile 
-
-resource "aws_iam_role" "test_role" {
-  name = "Ecsrole"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "ec2:Describe*"
-        Effect = "Allow"
-        Sid    = "*"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      },
-    ]
-  })
-}
-# instance profile
-resource "aws_iam_instance_profile" "profile" {
-  name = "profile"
-  role = aws_iam_role.test_role.name
-}
-
 # Create a new load balancer
 resource "aws_lb" "mani" {
-  name               = "Application"
+  name               = "Application-1"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.security.id]
@@ -260,7 +235,7 @@ resource "aws_lb_listener" "sh_front" {
 # auto scalling template
 resource "aws_launch_template" "foobar" {
   name_prefix   = "Temp-auto"
-  image_id      = "ami-0e86e20dae9224db8"
+  image_id      = "ami-0dee22c13ea7a9a67"
   instance_type = "t2.micro"
   #security_groups = [aws_security_group.kiran.id]
 
@@ -269,7 +244,7 @@ resource "aws_autoscaling_group" "Hukkum" {
   #availability_zones = ["us-east-1a"]
   desired_capacity   = 1
   max_size           = 2
-  min_size           = 2
+  min_size           = 1
   health_check_type  = "EC2"
   vpc_zone_identifier = [aws_subnet.sub1.id, aws_subnet.sub2.id]
   # attach a lb target group
@@ -301,7 +276,7 @@ resource "aws_autoscaling_policy" "scale_down" {
 ### Load balancer for private subnet
 # Create a new load balancer
 resource "aws_lb" "pri-lb" {
-  name               = "Application"
+  name               = "Application-2"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.security.id]
@@ -341,7 +316,7 @@ resource "aws_lb_listener" "sh_front2" {
 # auto scalling template
 resource "aws_launch_template" "foobar2" {
   name_prefix   = "Auto-pri"
-  image_id      = "ami-0e86e20dae9224db8"
+  image_id      = "ami-0dee22c13ea7a9a67"
   instance_type = "t2.micro"
   #security_groups = [aws_security_group.security.id]
 
@@ -349,7 +324,7 @@ resource "aws_launch_template" "foobar2" {
 resource "aws_autoscaling_group" "tiger" {
   desired_capacity   = 1
   max_size           = 2
-  min_size           = 2
+  min_size           = 1
   health_check_type  = "EC2"
   vpc_zone_identifier = [aws_subnet.sub3.id, aws_subnet.sub4.id]
   # attach a lb target group
