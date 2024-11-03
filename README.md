@@ -5,8 +5,13 @@ Set up a three-tier architecture project on AWS that includes auto-scaling acros
   * A three-tier architecture is a software development model that separates an application's functionality into three distinct layers:
 presentation, business logic, and data. The three tiers are logical, not physical, and can be developed, updated, or scaled independently.
 
+![image](./blog-3-tier-application.webp)
 
 
 ## Architecture of this project
 
 ![image](./3_tier_archi.png)
+
+## These all aws services create using infrastructure as a code Terraform...
+
+![image](./terraform-lifecycle.png)
